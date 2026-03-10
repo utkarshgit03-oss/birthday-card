@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Birthday Card</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="style.css" rel="stylesheet" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Pacifico&family=Quicksand:wght@500&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      html,
+      body {
+        overflow-x: hidden;
+      }
+      #card-container {
+        perspective: 1000px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+      #card {
+        width: 90vw;
+        max-width: 360px;
+        aspect-ratio: 5/8;
+        position: relative;
+        transform-style: preserve-3d;
+        transition: transform 0.8s;
+        cursor: pointer;
+      }
+      .card-face {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        min-height: 32rem;
+        backface-visibility: hidden;
+        border-radius: 1rem;
+        overflow: hidden;
+      }
+      #card-front {
+        background: #fbb6ce;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border: 4px solid #fda4af;
+      }
+      #card-back {
+        background: #fce7f3;
+        transform: rotateY(180deg);
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        align-items: center;
+        padding: 1rem;
+        color: #1f2937;
+        overflow-y: auto;
+      }
+      #confetti {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        pointer-events: none;
+        overflow: visible;
+      }
+
+      .balloon {
+        position: absolute;
+        width: 2rem;
+        height: 3rem;
+        border-radius: 50%;
+        opacity: 0.9;
+        bottom: -3rem;
+        animation: floatUp 7s linear infinite;
+      }
+      @keyframes floatUp {
+        0% {
+          transform: translateY(0) translateX(0);
+        }
+        100% {
+          transform: translateY(-120vh) translateX(var(--drift));
+        }
+      }
+
+      .confetti {
+        position: absolute;
+        top: -10px;
+        width: 0.5rem;
+        height: 0.5rem;
+        opacity: 0.9;
+        animation: fallDown 3s linear forwards;
+      }
+      @keyframes fall {
+        0% {
+          transform: translateY(0) rotate(0deg);
+        }
+        100% {
+          transform: translateY(110vh) rotate(360deg);
+        }
+      }
+      .ribbon-horizontal,
+      .ribbon-vertical,
+      .ribbon-knot {
+        position: absolute;
+        background: red;
+        transition: all 0.7s ease;
+      }
+      .ribbon-horizontal {
+        width: 100%;
+        height: 1.5rem;
+        top: 50%;
+        left: 0;
+        transform: translateY(-50%);
+      }
+      .ribbon-vertical {
+        width: 1.5rem;
+        height: 100%;
+        left: 50%;
+        top: 0;
+        transform: translateX(-50%);
+      }
+      .ribbon-knot {
+        width: 2rem;
+        height: 2rem;
+        border-radius: 50%;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+      }
+    </style>
+  </head>
+  <body
+    class="relative flex items-center justify-center min-h-screen bg-gradient-to-br from-pink-100 via-purple-200 to-yellow-100 overflow-hidden"
+  >
+    <div id="balloons"></div>
+
+    <div id="confetti"></div>
+
+    <!-- Card -->
+    <div id="card-container" class="px-4">
+      <div id="card">
+        <div id="card-front" class="card-face">
+          <div class="ribbon-horizontal"></div>
+          <div class="ribbon-vertical"></div>
+          <div class="ribbon-knot"></div>
+        </div>
+        <div id="card-back" class="card-face p-6">
+          <img
+            src="Tai.jpeg"
+            class="w-3/5 sm:w-1/2 mb-4 object-contain"
+            alt="Levi"
+          />
+
+          <h2
+            class="text-3xl sm:text-4xl mb-3 text-center text-pink-500 drop-shadow-md"
+            style="font-family: &quot;Pacifico&quot;, cursive"
+          >
+            Happy Birthday Tai! 🎂
+            <br /><br />
+          </h2>
+          <p
+            class="text-center text-lg sm:text-xl leading-relaxed mt-2 text-pink-600"
+            style="font-family: &quot;Quicksand&quot;, sans-serif"
+          >
+            Growing up, you were always the one who guided me, protected me, and
+            supported me. 😄
+            <br /><br />
+            Now seeing you as a mother makes this birthday even more special.
+            Your little one is lucky to have such a caring and loving mom. 🍼👶
+            <br /><br />
+            I hope this year brings you lots of happiness, strength, and
+            beautiful moments with your baby.
+
+            <br /><br />
+            May your days be filled with tiny giggles, warm hugs, and endless
+            love. 💕
+            <br /><br />
+            Enjoy your special day!
+            <br /><br />
+            – From your loving little brother 😄
+          </p>
+        </div>
+      </div>
+    </div>
+    <audio id="birthday-audio" src="birthday.mp3" preload="auto"></audio>
+
+    <!-- JS WORK -->
+    <script>
+      const card = document.getElementById("card");
+      const ribbonH = document.querySelector(".ribbon-horizontal");
+      const ribbonV = document.querySelector(".ribbon-vertical");
+      const ribbonK = document.querySelector(".ribbon-knot");
+      const audio = document.getElementById("birthday-audio");
+
+      let confettiInterval;
+      let flipped = false;
+
+      card.addEventListener("click", () => {
+        if (!flipped) {
+          ribbonH.style.transform = "translateY(-150%)";
+          ribbonV.style.transform = "translateX(-150%)";
+          ribbonK.style.transform = "scale(0)";
+
+          card.style.transform = "rotateY(180deg)";
+
+          // Confetti
+          confettiInterval = setInterval(launchConfetti, 800);
+
+          audio.currentTime = 0;
+          audio.play();
+        } else {
+          card.style.transform = "rotateY(0deg)";
+
+          audio.pause();
+          audio.currentTime = 0;
+          clearInterval(confettiInterval);
+        }
+
+        flipped = !flipped;
+      });
+      //  balloons
+      const balloonsContainer = document.getElementById("balloons");
+      const colors = [
+        "#f87171",
+        "#fbbf24",
+        "#34d399",
+        "#60a5fa",
+        "#a78bfa",
+        "#f472b6",
+      ];
+      for (let i = 0; i < 12; i++) {
+        const b = document.createElement("div");
+        b.className = "balloon";
+        b.style.backgroundColor =
+          colors[Math.floor(Math.random() * colors.length)];
+
+        b.style.left = Math.random() * 95 + "vw";
+
+        const drift = (Math.random() - 0.5) * 100 + "px";
+        b.style.setProperty("--drift", drift);
+
+        b.style.animationDuration = 5 + Math.random() * 5 + "s";
+
+        balloonsContainer.appendChild(b);
+      }
+
+      // Confetti
+      function launchConfetti() {
+        const confettiContainer = document.getElementById("confetti");
+        for (let i = 0; i < 30; i++) {
+          const c = document.createElement("div");
+          c.className = "confetti";
+          c.style.backgroundColor =
+            colors[Math.floor(Math.random() * colors.length)];
+
+          c.style.left = Math.random() * 100 + "vw";
+
+          const duration = 2 + Math.random() * 3;
+          c.style.animationDuration = duration + "s";
+
+          c.style.animationName = "fall";
+
+          confettiContainer.appendChild(c);
+
+          setTimeout(() => confettiContainer.removeChild(c), duration * 1000);
+        }
+      }
+    </script>
+  </body>
+</html>
